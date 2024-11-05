@@ -51,22 +51,14 @@ DisplayCompletionMessage() {
 EOF
   ip=$(get_server_ip)
   local stack=$1
-  if [[ "$stack" == "Valet" ]]; then
-    echo "+-------------------------------------------+"
-    echo "| Valet Linux Stack Installed Successfully  |"
-    echo "+-------------------------------------------+"
-    echo "| Web Site: http://phpmyadmin.test/         |"
-    echo "| User: root || Pass: $mysql_pass           |"
-    echo "+-------------------------------------------+"
-  else
-    echo "+-------------------------------------------+"
-    echo "|    $stack Stack Installed Successfully    |"
-    echo "+-------------------------------------------+"
-    echo "| Web Site: http://$ip/                     |"
-    echo "| PhpMyAdmin: http://$ip/phpmyadmin         |"
-    echo "| User: root || Pass: $mysql_pass           |"
-    echo "+-------------------------------------------+"
-  fi
+  echo "+-------------------------------------------+"
+  echo "|    $stack Stack Installed Successfully    "
+  echo "+-------------------------------------------+"
+  echo "| Web Site: http://$ip/                     "
+  echo "| PhpMyAdmin: http://$ip/phpmyadmin         "
+  echo "| User: root || Pass: $mysql_pass           "
+  echo "+-------------------------------------------+"
+  
 }
 
 # Check OS compatibility and root privileges
