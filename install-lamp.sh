@@ -386,14 +386,20 @@ install_phpmyadmin() {
   echo "phpmyadmin phpmyadmin/mysql/app-pass password $pass" | debconf-set-selections
   echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
 
-  # Install phpMyAdmin
-  DEBIAN_FRONTEND=noninteractive apt -y install phpmyadmin
-  update-alternatives --set php /usr/bin/php$php_version
+  # Download the latest phpMyAdmin
+  styled_echo info "Downloading latest phpMyAdmin"
+  wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz -P /tmp
+  tar xzf /tmp/phpMyAdmin-latest-all-languages.tar.gz -C /usr/share/
+  mv /usr/share/phpMyAdmin-*-all-languages /usr/share/phpmyadmin
 
-  # Remove existing symlink if it exists
-  if [ -e /var/www/html/phpmyadmin ]; then
-    rm -rf /var/www/html/phpmyadmin
-  fi
+  # Configure phpMyAdmin
+  styled_echo info "Configuring phpMyAdmin"
+  cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
+  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -base64 32)';/" /usr/share/phpmyadmin/config.inc.php
+
+  # Set permissions
+  chown -R www-data:www-data /usr/share/phpmyadmin
+  chmod -R 755 /usr/share/phpmyadmin
 
   # For Nginx configuration
   if command -v nginx > /dev/null 2>&1; then
