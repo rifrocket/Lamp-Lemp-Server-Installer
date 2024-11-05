@@ -1,14 +1,5 @@
 # LAMP/LEMP Stack Installation Script
 
-██████╗ ██╗███████╗██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗
-██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
-██████╔╝██║█████╗  ██████╔╝██║   ██║██║     █████╔╝ █████╗     ██║   
-██╔══██╗██║██╔══╝  ██╔══██╗██║   ██║██║     ██╔═██╗ ██╔══╝     ██║   
-██║  ██║██║██║     ██║  ██║╚██████╔╝╚██████╗██║  ██╗███████╗   ██║   
-╚═╝  ╚═╝╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝ 
-
-
-
 This bash script automates the installation of a LAMP or LEMP stack on a DigitalOcean droplet or Ubuntu server. It includes options for installing various additional components like Composer, and Supervisor.
 
 ## Features
@@ -27,7 +18,7 @@ This bash script automates the installation of a LAMP or LEMP stack on a Digital
 Run the following one-liner on your server to automatically download and execute the script:
 
 ```bash
-wget --no-check-certificate -O /tmp/install-lamp.sh https://raw.githubusercontent.com/rifrocket/LAMP-LEMP-Valet-Server-Installer/main/install-lamp.sh; sudo bash /tmp/install-lamp.sh
+wget --no-check-certificate -O /tmp/install-lamp.sh https://raw.githubusercontent.com/rifrocket/Lamp-Lemp-Server-Installer/main/install-lamp.sh; sudo bash /tmp/install-lamp.sh
 ```
 
 ## Notes
