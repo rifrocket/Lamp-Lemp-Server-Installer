@@ -395,11 +395,31 @@ install_phpmyadmin() {
   # Configure phpMyAdmin
   styled_echo info "Configuring phpMyAdmin"
   cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
-  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -base64 32)';/" /usr/share/phpmyadmin/config.inc.php
+
+  # Set a 32-byte blowfish_secret
+  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -base64 24)';/" /usr/share/phpmyadmin/config.inc.php
 
   # Set permissions
   chown -R www-data:www-data /usr/share/phpmyadmin
   chmod -R 755 /usr/share/phpmyadmin
+
+  # Configure phpMyAdmin storage
+  styled_echo info "Setting up phpMyAdmin configuration storage"
+
+  # Create phpMyAdmin database and import tables
+  mysql -u root -p"$pass" -e "CREATE DATABASE IF NOT EXISTS phpmyadmin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  mysql -u root -p"$pass" phpmyadmin < /usr/share/phpmyadmin/sql/create_tables.sql
+
+  # Create phpMyAdmin control user
+  CONTROL_USER="pma"
+  CONTROL_PASS="$(openssl rand -base64 16)"  # Generates a 24-character string
+  mysql -u root -p"$pass" -e "CREATE USER '$CONTROL_USER'@'localhost' IDENTIFIED BY '$CONTROL_PASS';"
+  mysql -u root -p"$pass" -e "GRANT SELECT, INSERT, UPDATE, DELETE ON phpmyadmin.* TO '$CONTROL_USER'@'localhost';"
+  mysql -u root -p"$pass" -e "FLUSH PRIVILEGES;"
+
+  # Update config.inc.php with control user credentials
+  sed -i "s/\$cfg\['Servers'\]\[\$i\]\['controluser'\] = '';/\$cfg['Servers'][\$i]['controluser'] = '$CONTROL_USER';/" /usr/share/phpmyadmin/config.inc.php
+  sed -i "s/\$cfg\['Servers'\]\[\$i\]\['controlpass'\] = '';/\$cfg['Servers'][\$i]['controlpass'] = '$CONTROL_PASS';/" /usr/share/phpmyadmin/config.inc.php
 
   # For Nginx configuration
   if command -v nginx > /dev/null 2>&1; then
@@ -475,7 +495,7 @@ EOL
     fi
   fi
 
-  styled_echo success "phpMyAdmin Installed Successfully"
+  styled_echo success "phpMyAdmin Installed and Configured Successfully"
 }
 
 # Install Supervisor
