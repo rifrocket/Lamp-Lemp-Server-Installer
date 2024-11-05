@@ -396,8 +396,8 @@ install_phpmyadmin() {
   styled_echo info "Configuring phpMyAdmin"
   cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
 
-  # Set a 32-byte blowfish_secret
-  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -base64 24)';/" /usr/share/phpmyadmin/config.inc.php
+  # Set a 32-character hexadecimal blowfish_secret
+  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -hex 16)';/" /usr/share/phpmyadmin/config.inc.php
 
   # Set permissions
   chown -R www-data:www-data /usr/share/phpmyadmin
