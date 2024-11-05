@@ -379,29 +379,23 @@ install_phpmyadmin() {
 
   styled_echo info "Installing phpMyAdmin"
 
-  # Remove apt-based installation steps
-  # echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
-  # echo "phpmyadmin phpmyadmin/app-password-confirm password $pass" | debconf-set-selections
-  # echo "phpmyadmin phpmyadmin/mysql/admin-pass password $pass" | debconf-set-selections
-  # echo "phpmyadmin phpmyadmin/mysql/app-pass password $pass" | debconf-set-selections
-  # echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
-  # DEBIAN_FRONTEND=noninteractive apt -y install phpmyadmin
+  # Pre-configure debconf selections for non-interactive installation
+  echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+  echo "phpmyadmin phpmyadmin/app-password-confirm password $pass" | debconf-set-selections
+  echo "phpmyadmin phpmyadmin/mysql/admin-pass password $pass" | debconf-set-selections
+  echo "phpmyadmin phpmyadmin/mysql/app-pass password $pass" | debconf-set-selections
+  echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
 
-  # Download the latest phpMyAdmin
-  latest_version=$(curl -s https://www.phpmyadmin.net/home_page/version.json | grep -oP '(?<="version": ")[^"]+')
-  wget https://www.phpmyadmin.net/downloads/phpMyAdmin-$latest_version-all-languages.tar.gz -O /tmp/phpmyadmin.tar.gz
-  tar xzf /tmp/phpmyadmin.tar.gz -C /usr/share/
-  mv /usr/share/phpMyAdmin-$latest_version-all-languages /usr/share/phpmyadmin
+  # Install phpMyAdmin
+  DEBIAN_FRONTEND=noninteractive apt -y install phpmyadmin
+  update-alternatives --set php /usr/bin/php$php_version
 
-  # Set permissions
-  chown -R www-data:www-data /usr/share/phpmyadmin
-  chmod 755 /usr/share/phpmyadmin
+  # Remove existing symlink if it exists
+  if [ -e /var/www/html/phpmyadmin ]; then
+    rm -rf /var/www/html/phpmyadmin
+  fi
 
-  # Create phpMyAdmin configuration
-  cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
-  sed -i "s/\$cfg\['blowfish_secret'\] = '';/\$cfg['blowfish_secret'] = '$(openssl rand -base64 32)';/" /usr/share/phpmyadmin/config.inc.php
-
-  # Configure web server
+  # For Nginx configuration
   if command -v nginx > /dev/null 2>&1; then
     styled_echo info "Configuring phpMyAdmin for Nginx..."
     ln -s /usr/share/phpmyadmin /var/www/html/
@@ -418,7 +412,7 @@ server {
     listen [::]:80 default_server;
     server_name localhost;
     root /var/www/html;
-    index index.php index.html index.htm;
+    index index.php index.html index.htm index.nginx-debian.html;
 
     location / {
         try_files \$uri \$uri/ =404;
@@ -457,10 +451,12 @@ EOL
     fi
   fi
 
+  # For Apache configuration
   if command -v apache2 > /dev/null 2>&1; then
     styled_echo info "Configuring phpMyAdmin for Apache..."
+    echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
     ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin
-    ln -s /usr/share/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+    ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
     a2enconf phpmyadmin
     phpenmod mbstring
     systemctl restart apache2
