@@ -5,7 +5,7 @@ mysql_pass="testT8080"
 php_version="8.2"  # Default PHP version
 install_lamp=true
 install_lemp=false
-install_composer=true    # Set Composer install default to true
+install_composer=false    # Set Composer install default to false
 install_supervisor=false # Set Supervisor install default to false
 remove_web_server=false
 
@@ -40,7 +40,7 @@ get_server_ip() {
 # Display completion message
 DisplayCompletionMessage() {
   clear
-  cat << "EOF"
+cat << "EOF"
 ██████╗ ██╗███████╗██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗
 ██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
 ██████╔╝██║█████╗  ██████╔╝██║   ██║██║     █████╔╝ █████╗     ██║   
@@ -49,16 +49,20 @@ DisplayCompletionMessage() {
 ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝ 
 
 EOF
+
   ip=$(get_server_ip)
   local stack=$1
   echo "+-------------------------------------------+"
-  echo "|    $stack Stack Installed Successfully    "
+  echo "|    $stack Stack Installed Successfully    
   echo "+-------------------------------------------+"
-  echo "| Web Site: http://$ip/                     "
-  echo "| PhpMyAdmin: http://$ip/phpmyadmin         "
-  echo "| User: root || Pass: $mysql_pass           "
+#   echo "| Web Site: http://$ip/                     
+  if $install_php_flag; then
+    echo "| PhpMyAdmin: http://$ip/phpmyadmin         
+  fi
+  if $install_mysql_flag; then
+    echo "| MySQL User: root || Pass: $mysql_pass      
+  fi
   echo "+-------------------------------------------+"
-  
 }
 
 # Check OS compatibility and root privileges
@@ -626,6 +630,7 @@ done
 
 # Display Welcome Banner
 clear
+
 cat << "EOF"
 ██████╗ ██╗███████╗██████╗  ██████╗  ██████╗██╗  ██╗███████╗████████╗
 ██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝
@@ -684,15 +689,27 @@ done
 if $remove_web_server; then
   remove_existing_installation
 else
-  # Prompt for PHP version with default value using read
-  read -p "Enter PHP version [default: 8.2]: " input_php_version
-  php_version="${input_php_version:-8.2}"
+  # Prompt whether to install PHP
+  read -p "Do you want to install PHP? [y/N]: " install_php_input
+  if [[ "$install_php_input" =~ ^[Yy]$ ]]; then
+    install_php_flag=true
+    read -p "Enter PHP version [default: 8.2]: " input_php_version
+    php_version="${input_php_version:-8.2}"
+  else
+    install_php_flag=false
+  fi
+
+  # New: Prompt whether to install MySQL
+  read -p "Do you want to install MySQL? [y/N]: " install_mysql_input
+  if [[ "$install_mysql_input" =~ ^[Yy]$ ]]; then
+    install_mysql_flag=true
+    read -p "Enter MySQL root password [default: testT8080]: " input_mysql_pass
+    mysql_pass="${input_mysql_pass:-testT8080}"
+  else
+    install_mysql_flag=false
+  fi
   
-  # Prompt for MySQL root password with default value using read
-  read -p "Enter MySQL root password [default: testT8080]: " input_mysql_pass
-  mysql_pass="${input_mysql_pass:-testT8080}"
-  
-  # Prompt for installing Supervisor using read Yes/No
+  # Prompt for installing Supervisor
   read -p "Do you want to install Supervisor? [default: N] [y/N]: " install_supervisor_input
   if [[ "$install_supervisor_input" =~ ^[Yy]$ ]]; then
     install_supervisor=true
@@ -700,7 +717,7 @@ else
     install_supervisor=false
   fi
   
-  # Prompt for installing Composer using read Yes/No
+  # Prompt for installing Composer
   read -p "Do you want to install Composer? [default: N] [y/N]: " install_composer_input
   if [[ "$install_composer_input" =~ ^[Yy]$ ]]; then
     install_composer=true
@@ -709,20 +726,33 @@ else
   fi
   
   update_system
-  check_requirements
+#   check_requirements
   
   if [ "$install_lamp" = true ]; then
-    install_php "$php_version"
+    # Conditionally install PHP and MySQL (and phpMyAdmin)
+    if $install_php_flag; then
+      install_php "$php_version"
+    fi
     install_apache "$php_version"
-    install_mysql "$mysql_pass"
-    install_phpmyadmin "$mysql_pass" "$php_version"
+    if $install_mysql_flag; then
+      install_mysql "$mysql_pass"
+      if $install_php_flag; then
+        install_phpmyadmin "$mysql_pass" "$php_version"
+      fi
+    fi
   fi
   
   if [ "$install_lemp" = true ]; then
-    install_php "$php_version"
+    if $install_php_flag; then
+      install_php "$php_version"
+    fi
     install_nginx
-    install_mysql "$mysql_pass"
-    install_phpmyadmin "$mysql_pass" "$php_version"
+    if $install_mysql_flag; then
+      install_mysql "$mysql_pass"
+      if $install_php_flag; then
+        install_phpmyadmin "$mysql_pass" "$php_version"
+      fi
+    fi
   fi
   
   if $install_composer; then
