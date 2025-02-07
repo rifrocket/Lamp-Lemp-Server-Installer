@@ -53,14 +53,14 @@ EOF
   ip=$(get_server_ip)
   local stack=$1
   echo "+-------------------------------------------+"
-  echo "|    $stack Stack Installed Successfully    
+  echo "|    $stack Stack Installed Successfully    "
   echo "+-------------------------------------------+"
-#   echo "| Web Site: http://$ip/                     
+  echo "| Web Site: http://$ip/      "               
   if $install_php_flag; then
-    echo "| PhpMyAdmin: http://$ip/phpmyadmin         
+    echo "| PhpMyAdmin: http://$ip/phpmyadmin   "      
   fi
   if $install_mysql_flag; then
-    echo "| MySQL User: root || Pass: $mysql_pass      
+    echo "| MySQL User: root || Pass: $mysql_pass"      
   fi
   echo "+-------------------------------------------+"
 }
