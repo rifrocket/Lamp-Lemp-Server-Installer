@@ -1,0 +1,52 @@
+# Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+*.out
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Release artifacts
+release-v*/
+*.tar.gz
+*.zip
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+test_results/
+coverage/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archive files
+*.7z
+*.dmg
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Temporary directories
+tmp/
+temp/
